@@ -2,8 +2,9 @@
 #include <QTcpSocket>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
+#include <QString>
 #include <QFile>
-#include <qstring.h>
 
 
 EventReceiver::EventReceiver(QObject *parent) : QTcpServer(parent)
@@ -78,8 +79,9 @@ void EventReceiver::processJsonEvent(QByteArray &eventData)
 		QString talkDeskPhoneNumber = jsonData["talkdesk_phone_number"].toString();
 		QString externalPhoneNumber = jsonData["forwarded_phone_number"].toString();
 		int duration = jsonData["duration"].toString().toInt();
-
 		int cost = calculateCost(talkdeskAccount, talkDeskPhoneNumber, externalPhoneNumber, duration);
+
+		updateUserBillingInformation(talkdeskAccount, talkDeskPhoneNumber, externalPhoneNumber, duration, cost);
 	}
 }
 
@@ -154,4 +156,51 @@ int EventReceiver::calculateExternalNumberCost(QString externalPhoneNumber)
 	}
 
 	return externalCostPerMinute;
+}
+
+
+void EventReceiver::updateUserBillingInformation(QString talkdeskAccount, QString talkdeskPhoneNumber, QString externalPhoneNumber, int callDuration, int callCost)
+{
+	QString userFileName = "userDatabase\\" + talkdeskAccount;
+	QFile file(userFileName);
+	
+	QJsonObject inputJsonObject;
+	QJsonDocument inputJsonDocument(inputJsonObject);
+
+	if(file.exists())
+	{
+		file.open(QIODevice::ReadWrite);
+	
+		QByteArray fileContents = file.readAll();
+		inputJsonDocument = QJsonDocument::fromJson(fileContents);
+		inputJsonObject = inputJsonDocument.object();
+
+		//Clear the file contents.
+		file.resize(0);
+	}
+	else
+	{
+		file.open(QIODevice::WriteOnly);
+
+		inputJsonObject["account_id"] = talkdeskAccount;
+		inputJsonObject["calls"] = QJsonArray();
+	}
+
+	//Copy the basic user information.
+	QJsonObject outputObject;
+	outputObject["account_id"] = inputJsonObject["account_id"];
+
+	//Update the calls array.
+	QJsonObject callInformation;
+	callInformation["talkdesk_phone_number"] = talkdeskPhoneNumber;
+	callInformation["forwarded_phone_number"] = externalPhoneNumber.isEmpty() ? QJsonValue::Null : QJsonValue(externalPhoneNumber);
+	callInformation["duration"] = callDuration;
+	callInformation["cost"] = callCost;
+	
+	QJsonArray callsArray = inputJsonObject["calls"].toArray();
+	callsArray.append(callInformation);
+	outputObject["calls"] = callsArray;
+	
+	QJsonDocument outputJsonDocument(outputObject);
+	file.write(outputJsonDocument.toJson());
 }

@@ -18,6 +18,7 @@ class EventReceiver : public QTcpServer
 	int calculateCost(QString talkdeskAccount, QString talkDeskPhoneNumber, QString externalPhoneNumber, int duration);
 	int calculateTalkdeskNumberCost(QString talkDeskPhoneNumber);
 	int calculateExternalNumberCost(QString externalPhoneNumber);
+	void updateUserBillingInformation(QString talkdeskAccount, QString talkdeskPhoneNumber, QString externalPhoneNumber, int callDuration, int callCost);
 
 	private slots:
 	void eventReceived();

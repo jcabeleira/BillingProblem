@@ -1,0 +1,23 @@
+{
+    "account_id": "3f4a37a201c642014200000c",
+    "calls": [
+        {
+            "cost": 14,
+            "duration": 91,
+            "forwarded_phone_number": null,
+            "talkdesk_phone_number": "+44080814845348611"
+        },
+        {
+            "cost": 18,
+            "duration": 91,
+            "forwarded_phone_number": "+3510000000",
+            "talkdesk_phone_number": "+44080814845348611"
+        },
+        {
+            "cost": 48,
+            "duration": 91,
+            "forwarded_phone_number": "+3516000000",
+            "talkdesk_phone_number": "+44080814845348611"
+        }
+    ]
+}
