@@ -2,6 +2,7 @@
 #define EVENTRECEIVER_H
 
 #include <QTcpServer>
+#include <QVector>
 
 class EventReceiver : public QTcpServer
 {
@@ -11,14 +12,22 @@ class EventReceiver : public QTcpServer
 	EventReceiver(QObject *parent = 0);
 
 	private:
+	void processTwilioCSV();
 	void incomingConnection(int socket);
-	void processJsonEvent(QByteArray &event);
+	void processJsonEvent(QByteArray &eventData);
+	int calculateCost(QString talkdeskAccount, QString talkDeskPhoneNumber, QString externalPhoneNumber, int duration);
+	int calculateTalkdeskNumberCost(QString talkDeskPhoneNumber);
+	int calculateExternalNumberCost(QString externalPhoneNumber);
 
 	private slots:
 	void eventReceived();
 
 	private:
 	static const quint16 DEFAULT_RECEPTION_PORT = 8080;
+	static const int PROFIT_MARGIN_PER_MINUTE = 0;
+	typedef QPair<QString, float> CallCodePrice;
+
+	QVector<CallCodePrice> prices;
 };
 
 #endif // EVENTRECEIVER_H
